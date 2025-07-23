@@ -1,7 +1,7 @@
 {
   "name": "react-native-brother-label-print",
   "title": "React Native Brother Label Print",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "React Native module for printing with Brother printers via WiFi and Bluetooth",
   "main": "index.js",
   "types": "index.d.ts",

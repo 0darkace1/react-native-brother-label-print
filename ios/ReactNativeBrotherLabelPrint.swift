@@ -9,27 +9,29 @@ class ReactNativeBrotherLabelPrint: NSObject {
 
     @objc
     func discoverNetworkPrinters(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
-        let searcher = BRLMPrinterSearcher()
+        var foundPrinters: [[String: String]] = []
+        let option = BRLMNetworkSearchOption()
+        option.searchDuration = 10  // seconds, adjust as needed
 
-        searcher?.startNetworkSearch { results, error in
-            if let error = error {
-                reject("DISCOVERY_FAILED", error.localizedDescription, nil)
+        // Start the network search with options and a closure for each found printer
+        let result = BRLMPrinterSearcher.startNetworkSearch(option) { channel in
+            // Extract model name and IP from channel info
+            let modelName = channel.extraInfo?.value(forKey: BRLMChannelExtraInfoKeyModelName) as? String ?? ""
+            let ipAddress = channel.channelInfo ?? ""
+
+            foundPrinters.append([
+                "modelName": modelName,
+                "ipAddress": ipAddress
+            ])
+        }
+
+        // Wait for the search duration plus a little buffer, then resolve promise
+        DispatchQueue.global().asyncAfter(deadline: .now() + option.searchDuration + 1) {
+            if result.error.code != .noError {
+                reject("DISCOVERY_FAILED", "Printer search failed with error code \(result.error.code.rawValue)", nil)
                 return
             }
-
-            guard let results = results else {
-                resolve([])
-                return
-            }
-
-            let printers: [[String: String]] = results.map { result in
-                return [
-                    "modelName": result.modelName ?? "",
-                    "ipAddress": result.ipAddress ?? ""
-                ]
-            }
-
-            resolve(printers)
+            resolve(foundPrinters)
         }
     }
     
