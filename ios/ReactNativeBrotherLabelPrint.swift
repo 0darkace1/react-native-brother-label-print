@@ -6,6 +6,32 @@ import BRLMPrinterKit
 
 @objc(ReactNativeBrotherLabelPrint)
 class ReactNativeBrotherLabelPrint: NSObject {
+
+    @objc
+    func discoverNetworkPrinters(_ resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {
+        let searcher = BRLMPrinterSearcher()
+
+        searcher?.startNetworkSearch { results, error in
+            if let error = error {
+                reject("DISCOVERY_FAILED", error.localizedDescription, nil)
+                return
+            }
+
+            guard let results = results else {
+                resolve([])
+                return
+            }
+
+            let printers: [[String: String]] = results.map { result in
+                return [
+                    "modelName": result.modelName ?? "",
+                    "ipAddress": result.ipAddress ?? ""
+                ]
+            }
+
+            resolve(printers)
+        }
+    }
     
     @objc
     func printImageViaWifi(_ printURI: String, ipAddress ip: String, modelName model: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) -> Void {

@@ -9,6 +9,20 @@ if (!ReactNativeBrotherLabelPrint) {
   throw new Error("ReactNativeBrotherLabelPrint module is not available");
 }
 
+export function discoverNetworkPrinters() {
+  return new Promise((resolve, reject) => {
+    ReactNativeBrotherLabelPrint.discoverNetworkPrinters()
+      .then((printers) => resolve(printers))
+      .catch((error) => {
+        console.error(
+          "[BrotherLabelPrint] discoverNetworkPrinters error:",
+          error
+        );
+        reject(error);
+      });
+  });
+}
+
 export function printImageViaWifi(uri, ipAddress, modelName) {
   if (!uri) {
     console.error("[BrotherLabelPrint] uri missing");

@@ -64,8 +64,10 @@ public class ReactNativeBrotherLabelPrintModule extends ReactContextBaseJavaModu
 
     private boolean checkBluetoothPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            return ContextCompat.checkSelfPermission(reactContext, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED
-                && ContextCompat.checkSelfPermission(reactContext, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED;
+            return ContextCompat.checkSelfPermission(reactContext, Manifest.permission.BLUETOOTH_CONNECT) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(reactContext, Manifest.permission.BLUETOOTH_SCAN) == PackageManager.PERMISSION_GRANTED;
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return ContextCompat.checkSelfPermission(reactContext, Manifest.permission.BLUETOOTH) == PackageManager.PERMISSION_GRANTED;
         }
         return true;
     }
@@ -133,6 +135,49 @@ public class ReactNativeBrotherLabelPrintModule extends ReactContextBaseJavaModu
             Log.e(TAG, "Error creating print settings: " + e.getMessage());
             return null;
         }
+    }
+
+    @ReactMethod
+    public void discoverNetworkPrinters(Promise promise) {
+        printerHandler.post(() -> {
+            try {
+                NetworkSearchOption option = new NetworkSearchOption(15.0, false);
+                List<WritableMap> foundPrinters = new ArrayList<>();
+
+                PrinterSearchResult result = PrinterSearcher.startNetworkSearch(reactContext, option, channel -> {
+                    try {
+                        String modelName = (String) channel.getExtraInfo().get(Channel.ExtraInfoKey.ModelName);
+                        String ipAddress = channel.getChannelInfo();
+
+                        WritableMap printer = Arguments.createMap();
+                        printer.putString("modelName", modelName);
+                        printer.putString("ipAddress", ipAddress);
+                        synchronized (foundPrinters) {
+                            foundPrinters.add(printer);
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error processing discovered channel: " + e.getMessage());
+                    }
+                });
+
+                if (result.getError().getCode() != PrinterSearchError.ErrorCode.NoError) {
+                    promise.reject("DISCOVERY_FAILED", "Failed to start network search: " + result.getError().getCode());
+                    return;
+                }
+
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    WritableArray array = Arguments.createArray();
+                    synchronized (foundPrinters) {
+                        for (WritableMap printer : foundPrinters) {
+                            array.pushMap(printer);
+                        }
+                    }
+                    promise.resolve(array);
+                }, 16000);
+            } catch (Exception e) {
+                promise.reject("DISCOVERY_ERROR", "Exception: " + e.getMessage());
+            }
+        });
     }
 
     @ReactMethod
