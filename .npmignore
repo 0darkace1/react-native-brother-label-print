@@ -1,0 +1,85 @@
+# Development files
+.git/
+.gitignore
+.github/
+.idea/
+.vscode/
+.DS_Store
+*.log
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+.env
+.env.*
+
+# Source control
+.gitattributes
+.gitmodules
+
+# Build and test
+coverage/
+.jest/
+__tests__/
+__mocks__/
+*.test.js
+*.spec.js
+junit.xml
+.eslintrc*
+.prettierrc*
+.watchmanconfig
+babel.config.js
+jest.config.*
+tsconfig.*
+*.tsbuildinfo
+
+# Documentation and examples
+docs/
+example/
+screenshots/
+*.md
+!README.md
+CONTRIBUTING.md
+CHANGELOG.md
+
+# Android specific
+android/.gradle/
+android/build/
+android/gradle/
+android/gradlew
+android/gradlew.bat
+android/local.properties
+android/*.iml
+android/.idea/
+android/libs/*.aar
+android/.project
+android/.settings/
+android/.classpath
+
+# iOS specific
+ios/build/
+ios/Pods/
+ios/*.xcworkspace/
+ios/*.xcodeproj/xcuserdata/
+ios/*.xcodeproj/project.xcworkspace/
+ios/Podfile.lock
+ios/.DS_Store
+
+# Development dependencies
+node_modules/
+
+# Editor files
+*.swp
+*.swo
+*~
+.history/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+
+# Misc
+.cache/
+.env.*
+.npmrc
